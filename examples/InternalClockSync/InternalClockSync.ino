@@ -22,6 +22,7 @@ DCF77 DCF = DCF77(DCF_PIN,DCF_INTERRUPT);
 
 void setup() {
   Serial.begin(9600); 
+  DCF.setSplitTime(80,180);
   DCF.Start();
   Serial.println("Waiting for DCF77 time ... ");
   Serial.println("It will take at least 2 minutes until a first update can be processed.");
@@ -35,7 +36,8 @@ void loop() {
     Serial.println("Time is updated");
     setTime(DCFtime);
   }	
-  digitalClockDisplay();  
+
+  digitalClockDisplay();
 }
 
 void digitalClockDisplay(){

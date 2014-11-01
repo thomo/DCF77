@@ -25,7 +25,7 @@
 #include <Time.h>        //http://www.arduino.cc/playground/Code/Time
 #include <Utils.h>
 
-#define _DCF77_VERSION 0_9_7 // software version of this library
+#define _DCF77_VERSION 0_9_9 // software version of this library
 
 using namespace Utils;
 
@@ -35,13 +35,14 @@ using namespace Utils;
 DCF77::DCF77(int DCF77Pin, int DCFinterrupt, bool OnRisingFlank) 
 {
 	dCF77Pin     = DCF77Pin;
-	dCFinterrupt = DCFinterrupt;	
+	dCFinterrupt = DCFinterrupt;
 	pulseStart   = OnRisingFlank ? HIGH : LOW;
+	dCFsplitTime = DCFSplitTime;
 	
-	if (!initialized) {  
-		pinMode(dCF77Pin, INPUT);	
+	if (!initialized) {
+		pinMode(dCF77Pin, INPUT);
 		initialize();
-	  }
+	}
 	initialized = true;
 }
 
@@ -49,19 +50,24 @@ DCF77::DCF77(int DCF77Pin, int DCFinterrupt, bool OnRisingFlank)
  * Initialize parameters
  */
 void DCF77::initialize(void) 
-{	
+{
 	leadingEdge           = 0;
 	trailingEdge          = 0;
 	PreviousLeadingEdge   = 0;
 	Up                    = false;
-	runningBuffer		  = 0;
+	runningBuffer         = 0;
 	FilledBufferAvailable = false;
 	bufferPosition        = 0;
 	flags.parityDate      = 0;
 	flags.parityFlag      = 0;
 	flags.parityHour      = 0;
 	flags.parityMin       = 0;
-	CEST				  = 0;
+	CEST                  = 0;
+}
+
+void DCF77::setSplitTime(int shortPulseLength, int longPulseLength)
+{
+	dCFsplitTime = (shortPulseLength+longPulseLength)/2;
 }
 
 /**
@@ -77,7 +83,7 @@ void DCF77::Start(void)
  */
 void DCF77::Stop(void) 
 {
-	detachInterrupt(dCFinterrupt);	
+	detachInterrupt(dCFinterrupt);
 }
 
 /**
@@ -114,23 +120,23 @@ void DCF77::int0handler() {
 		if (!Up) {
 			// Flank up
 			leadingEdge=flankTime;
-			Up = true;		                
-		} 
+			Up = true;
+		}
 	} else {
 		if (Up) {
 			// Flank down
 			trailingEdge=flankTime;
-			int difference=trailingEdge - leadingEdge;            
-          		
+			int difference=trailingEdge - leadingEdge;
+
 			if ((leadingEdge-PreviousLeadingEdge) > DCFSyncTime) {
 				finalizeBuffer();
-			}         
-			PreviousLeadingEdge = leadingEdge;       
+			}
+			PreviousLeadingEdge = leadingEdge;
 			// Distinguish between long and short pulses
-			if (difference < DCFSplitTime) { appendSignal(0); } else { appendSignal(1); }
-			Up = false;	 
+			if (difference < dCFsplitTime) { appendSignal(0); } else { appendSignal(1); }
+			Up = false;
 		}
-	}  
+	}
 }
 
 /**
@@ -160,12 +166,12 @@ inline void DCF77::finalizeBuffer(void) {
 		filledTimestamp = now();
 		// Reset running buffer
 		bufferinit();
-		FilledBufferAvailable = true;    
+		FilledBufferAvailable = true;
     } else {
 		// Buffer is not yet full at end of time-sequence
 		LogLn("EoM");
 		// Reset running buffer
-		bufferinit();      
+		bufferinit();
     }
 }
 
@@ -203,11 +209,11 @@ bool DCF77::receivedTimeUpdate(void) {
 	// Time can be further from internal clock for several reasons
 	// We will check if lag from internal clock is consistent
 	time_t shiftPrevious = (previousUpdatedTime - previousProcessingTimestamp);
-	time_t shiftCurrent = (latestupdatedTime - processingTimestamp);	
+	time_t shiftCurrent = (latestupdatedTime - processingTimestamp);
 	time_t shiftDifference = abs(shiftCurrent-shiftPrevious);
 	storePreviousTime();
 	if(shiftDifference < 2*SECS_PER_MIN) {
-		LogLn("time lag consistent");		
+		LogLn("time lag consistent");
 		return true;
 	} else {
 		LogLn("time lag inconsistent");
@@ -276,24 +282,24 @@ bool DCF77::processBuffer(void) {
 
 	// Check parities
     if (flags.parityMin == rx_buffer->P1  &&
-        flags.parityHour == rx_buffer->P2 &&
-        flags.parityDate == rx_buffer->P3 &&
+		flags.parityHour == rx_buffer->P2 &&
+		flags.parityDate == rx_buffer->P3 &&
 		rx_buffer->CEST != rx_buffer->CET) 
-    { 
-      //convert the received buffer into time	  	  	 
-      time.Second = 0;
-	  time.Minute = rx_buffer->Min-((rx_buffer->Min/16)*6);
-      time.Hour   = rx_buffer->Hour-((rx_buffer->Hour/16)*6);
-      time.Day    = rx_buffer->Day-((rx_buffer->Day/16)*6); 
-      time.Month  = rx_buffer->Month-((rx_buffer->Month/16)*6);
-      time.Year   = 2000 + rx_buffer->Year-((rx_buffer->Year/16)*6) -1970;
-	  latestupdatedTime = makeTime(time);	 
-	  CEST = rx_buffer->CEST;
-	  //Parity correct
-	  return true;
+	{ 
+		//convert the received buffer into time
+		time.Second = 0;
+		time.Minute = rx_buffer->Min-((rx_buffer->Min/16)*6);
+		time.Hour   = rx_buffer->Hour-((rx_buffer->Hour/16)*6);
+		time.Day    = rx_buffer->Day-((rx_buffer->Day/16)*6); 
+		time.Month  = rx_buffer->Month-((rx_buffer->Month/16)*6);
+		time.Year   = 2000 + rx_buffer->Year-((rx_buffer->Year/16)*6) -1970;
+		latestupdatedTime = makeTime(time);	 
+		CEST = rx_buffer->CEST;
+		//Parity correct
+		return true;
 	} else {
-	  //Parity incorrect
-	  return false;
+		//Parity incorrect
+		return false;
 	}
 }
 
@@ -333,6 +339,7 @@ time_t DCF77::getUTCTime(void)
  */
 int DCF77::dCF77Pin=0;
 int DCF77::dCFinterrupt=0;
+int DCF77::dCFsplitTime=DCFSplitTime;
 byte DCF77::pulseStart=HIGH;
 
 // Parameters shared between interupt loop and main loop

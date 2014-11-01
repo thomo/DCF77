@@ -1,10 +1,12 @@
-Arduino DCF77 Library 0.9.9
+Arduino DCF77 Library
 ===========================
+
+Version  0.9.9
 
 (c) 2012 Thijs Elenbaas - https://github.com/thijse/Arduino-Libraries/downloads  
 (c) 2014 Thomas Mohaupt - https://github.com/ThoMo/DCF77  
 
-This work is licensed under the under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version. To view a copy of this license, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+*This work is licensed under the under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version. To view a copy of this license, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA*
 
 
 The DCF77 library adds the ability to read and decode the atomic time broadcasted by the DCF77 radiostation. It has been designed to work in conjunction with the Arduino Time library and allows a sketch to get the precise CET time and date as a standard C time_t.  
@@ -38,7 +40,7 @@ The DCFF77 directory contains the DCFF77 library and some example sketches
 
 - DCFPulseLength
 
-  This example illustrates the pulse-to-pulse time and pulse lengths coming from the DCF decoder. While the DCF specification says that pulses should be either 100 or 200 ms, you will probably see longer pulse lengths. For optimal distinction between long and short pulses use the output of this sketch to set the parameter #define DCFSplitTime in DCF77.h to (Tshort+Tlong)/2.
+  This example illustrates the pulse-to-pulse time and pulse lengths coming from the DCF decoder. While the DCF specification says that pulses should be either 100 or 200 ms, you will probably see other pulse lengths. For optimal distinction between long and short pulses use the output of this sketch as parameter for `setTimeSplit`, e.g. `setTimeSplit(100,200)`.
 
 - DCFBinaryStream
 
@@ -50,7 +52,7 @@ The DCFF77 directory contains the DCFF77 library and some example sketches
 
 - SyncProvider
 
-  This sketch shows how to fetch a DCF77 time and synchronize the internal clock using the setSyncProvider function. Note that the loop code does not require any logic to maintain time sync. The Time library will monitor DC77 and sync the time as necessary. 
+  This sketch shows how to fetch a DCF77 time and synchronize the internal clock using the `setSyncProvider` function. Note that the loop code does not require any logic to maintain time sync. The Time library will monitor DC77 and sync the time as necessary. 
 
 - TimeZones
 
@@ -113,8 +115,9 @@ http://thijs.elenbaas.net/2012/04/arduino-dcf77-radio-clock-receiver-library/
       Serial.print(digits);
     }
 
-On using and modifying libraries
---------------------------------
--  http://www.arduino.cc/en/Main/Libraries
--  http://www.arduino.cc/en/Reference/Libraries 
+Change log
+----------
 
+* v0.9.9
+  add `setTimeSplit` function to deal with different pulse width
+  

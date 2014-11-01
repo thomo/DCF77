@@ -8,6 +8,8 @@ Version  0.9.9
 
 *This work is licensed under the under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version. To view a copy of this license, write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA*
 
+(This library is forked out of the [arduino-libraries](https://github.com/thijse/Arduino-Libraries) of Thijs Elenbaas.)
+
 
 The DCF77 library adds the ability to read and decode the atomic time broadcasted by the DCF77 radiostation. It has been designed to work in conjunction with the Arduino Time library and allows a sketch to get the precise CET time and date as a standard C time_t.  
 The DCF77 Library download. Example sketches have been added to

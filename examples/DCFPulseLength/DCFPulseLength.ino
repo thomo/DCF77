@@ -8,9 +8,8 @@
   
   Notice that will the DCF specification says that pulses should be either
   100 or 200 ms, we notice longer pulse lengths. This is likely due to to
-  the hardware of the decoder. For optimal distinction between long and 
-  short pulses in the DCF library, set the parameter 
-  #define DCFSplitTime in DCF77.h to (Tlongpulse+Tlongpulse)/2		  
+  the hardware of the decoder. For optimal distinction between long and
+  short pulses in the DCF library, call setSplitTime(Tshortpulse,Tlongpulse)
 */
  
 #define BLINKPIN 13
@@ -29,25 +28,24 @@ void setup() {
 
 void loop() {
   int sensorValue = digitalRead(DCF77PIN);
-    if (sensorValue) {
-      if (!Up) {
-        flankUp=millis();
-        Up = true;
-        digitalWrite(BLINKPIN, HIGH);
-      }
-    } else {
-      if (Up) {
-        flankDown=millis();
-        Serial.print("Cycle: ");
-        Serial.print(flankUp-PreviousflankUp);
-        Serial.print(" Pulse :");
-        Serial.println(flankDown - flankUp);
-        PreviousflankUp = flankUp;
-        Up = false;
-		digitalWrite(BLINKPIN, LOW);
-      }              
+  if (sensorValue) {
+    if (!Up) {
+      flankUp=millis();
+      Up = true;
+      digitalWrite(BLINKPIN, HIGH);
     }
-  
+  } else {
+    if (Up) {
+      flankDown=millis();
+      Serial.print("Cycle: ");
+      Serial.print(flankUp-PreviousflankUp);
+      Serial.print(" Pulse :");
+      Serial.println(flankDown - flankUp);
+      PreviousflankUp = flankUp;
+      Up = false;
+      digitalWrite(BLINKPIN, LOW);
+    }
+  }
 }
 
 

@@ -14,6 +14,7 @@
 
 
 #include <DCF77.h>       //https://github.com/thijse/Arduino-Libraries/downloads
+                         //https://github.com/ThoMo/DCF77
 #include <Time.h>        //http://www.arduino.cc/playground/Code/Time
 
 #define DCF_PIN 2	         // Connection pin to DCF 77 device
@@ -29,6 +30,8 @@ void setup() {
  Serial.println("BF  - Buffer is full at end of time-sequence. This is good");
  Serial.println("EoB - Buffer is full before at end of time-sequence");
  Serial.println("EoM - Buffer is not yet full at end of time-sequence");
+ 
+ // DCF.setSplitTime(80, 180);
  DCF.Start();
 }
 

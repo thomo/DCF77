@@ -13,7 +13,7 @@
 
 #define DCFRejectionTime 700	// Pulse-to-Pulse rejection time. 
 #define DCFRejectPulseWidth 50  // Minimal pulse width
-#define DCFSplitTime 130		// Specifications distinguishes pulse width 100 ms and 200 ms. In practice we see 130 ms and 230
+#define DCFSplitTime 180		// Specifications distinguishes pulse width 100 ms and 200 ms. In practice we see 130 ms and 230
 #define DCFSyncTime 1500		// Specifications defines 2000 ms pulse for end of sequence
 
 class DCF77 {

@@ -34,20 +34,19 @@ private:
 	static unsigned char CEST;
 	// DCF time format structure
 	struct DCF77Buffer {
-	  //unsigned long long prefix		:21;
-	  unsigned long long prefix		:17;
-	  unsigned long long CEST		:1; // CEST 
-	  unsigned long long CET		:1; // CET 
-	  unsigned long long unused		:2; // unused bits
-	  unsigned long long Min		:7;	// minutes
-	  unsigned long long P1			:1;	// parity minutes
-	  unsigned long long Hour		:6;	// hours
-	  unsigned long long P2			:1;	// parity hours
-	  unsigned long long Day		:6;	// day
-	  unsigned long long Weekday	:3;	// day of week
-	  unsigned long long Month		:5;	// month
-	  unsigned long long Year		:8;	// year (5 -> 2005)
-	  unsigned long long P3			:1;	// parity
+		unsigned long long prefix		:17;
+		unsigned long long CEST		:1; // CEST
+		unsigned long long CET		:1; // CET
+		unsigned long long unused		:2; // unused bits
+		unsigned long long Min		:7;	// minutes
+		unsigned long long P1			:1;	// parity minutes
+		unsigned long long Hour		:6;	// hours
+		unsigned long long P2			:1;	// parity hours
+		unsigned long long Day		:6;	// day
+		unsigned long long Weekday	:3;	// day of week
+		unsigned long long Month		:5;	// month
+		unsigned long long Year		:8;	// year (5 -> 2005)
+		unsigned long long P3			:1;	// parity
 	};
 	
 	
@@ -85,7 +84,7 @@ private:
 	bool static processBuffer(void);
 	void static appendSignal(unsigned char signal);
 
-public:	
+public:
 	// Public Functions
 	DCF77(int DCF77Pin, int DCFinterrupt, bool OnRisingFlank=true); 
 	static void setSplitTime(int shortPulseLength, int longPulseLength);

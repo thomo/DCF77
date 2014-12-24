@@ -16,9 +16,10 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   
-  11 Apr 2012 - initial release 
+  11 Apr 2012 - initial release
   23 Apr 2012 - added UTC support
   2  Jul 2012 - minor bugfix and additional noise rejection
+  1  Nov 2014 - add method to set split time
 */
 
 #include <DCF77.h>       //https://github.com/thijse/Arduino-Libraries/downloads
@@ -49,7 +50,7 @@ DCF77::DCF77(int DCF77Pin, int DCFinterrupt, bool OnRisingFlank)
 /**
  * Initialize parameters
  */
-void DCF77::initialize(void) 
+void DCF77::initialize(void)
 {
 	leadingEdge           = 0;
 	trailingEdge          = 0;
@@ -73,7 +74,7 @@ void DCF77::setSplitTime(int shortPulseLength, int longPulseLength)
 /**
  * Start receiving DCF77 information
  */
-void DCF77::Start(void) 
+void DCF77::Start(void)
 {
 	attachInterrupt(dCFinterrupt, int0handler, CHANGE);
 }
@@ -81,7 +82,7 @@ void DCF77::Start(void)
 /**
  * Stop receiving DCF77 information
  */
-void DCF77::Stop(void) 
+void DCF77::Stop(void)
 {
 	detachInterrupt(dCFinterrupt);
 }
@@ -89,7 +90,7 @@ void DCF77::Stop(void)
 /**
  * Initialize buffer for next time update
  */
-inline void DCF77::bufferinit(void) 
+inline void DCF77::bufferinit(void)
 {
 	runningBuffer    = 0;
 	bufferPosition   = 0;
@@ -144,10 +145,10 @@ void DCF77::int0handler() {
  */
 inline void DCF77::appendSignal(unsigned char signal) {
 	Log(signal, DEC);
-	runningBuffer = runningBuffer | ((unsigned long long) signal << bufferPosition);  
+	runningBuffer = runningBuffer | ((unsigned long long) signal << bufferPosition);
 	bufferPosition++;
 	if (bufferPosition > 59) {
-		// Buffer is full before at end of time-sequence 
+		// Buffer is full before at end of time-sequence
 		// this may be due to noise giving additional peaks
 		LogLn("EoB");
 		finalizeBuffer();
@@ -190,7 +191,7 @@ bool DCF77::receivedTimeUpdate(void) {
 		return false;
 	}
 	
-	// Since the received signal is error-prone, and the parity check is not very strong, 
+	// Since the received signal is error-prone, and the parity check is not very strong,
 	// we will do some sanity checks on the time
 	time_t processedTime = latestupdatedTime + (now() - processingTimestamp);
 	if (processedTime<MIN_TIME || processedTime>MAX_TIME) {
@@ -219,13 +220,13 @@ bool DCF77::receivedTimeUpdate(void) {
 		LogLn("time lag inconsistent");
 	}
 	
-	// If lag is inconsistent, this may be because of no previous stored date 
+	// If lag is inconsistent, this may be because of no previous stored date
 	// This would be resolved in a second run.
 	return false;
 }
 
 /**
- * Store previous time. Needed for consistency 
+ * Store previous time. Needed for consistency
  */
 void DCF77::storePreviousTime(void) {
 	previousUpdatedTime = latestupdatedTime;
@@ -233,13 +234,13 @@ void DCF77::storePreviousTime(void) {
 }
 
 /**
- * Calculate the parity of the time and date. 
+ * Calculate the parity of the time and date.
  */
-void DCF77::calculateBufferParities(void) {	
-	// Calculate Parity 
-	flags.parityFlag = 0;	
+void DCF77::calculateBufferParities(void) {
+	// Calculate Parity
+	flags.parityFlag = 0;
 	for(int pos=0;pos<59;pos++) {
-		bool s = (processingBuffer >> pos) & 1;  
+		bool s = (processingBuffer >> pos) & 1;
 		
 		// Update the parity bits. First: Reset when minute, hour or date starts.
 		if (pos ==  21 || pos ==  29 || pos ==  36) {
@@ -258,9 +259,9 @@ void DCF77::calculateBufferParities(void) {
 
 /**
  * Evaluates the information stored in the buffer. This is where the DCF77
- * signal is decoded 
+ * signal is decoded
  */
-bool DCF77::processBuffer(void) {	
+bool DCF77::processBuffer(void) {
 	
 	/////  Start interaction with interrupt driven loop  /////
 	
@@ -268,7 +269,7 @@ bool DCF77::processBuffer(void) {
 	processingBuffer = filledBuffer;
 	processingTimestamp = filledTimestamp;
 	// Indicate that there is no filled, unprocessed buffer anymore
-	FilledBufferAvailable = false;  
+	FilledBufferAvailable = false;
 	
 	/////  End interaction with interrupt driven loop   /////
 
@@ -284,16 +285,16 @@ bool DCF77::processBuffer(void) {
     if (flags.parityMin == rx_buffer->P1  &&
 		flags.parityHour == rx_buffer->P2 &&
 		flags.parityDate == rx_buffer->P3 &&
-		rx_buffer->CEST != rx_buffer->CET) 
-	{ 
+		rx_buffer->CEST != rx_buffer->CET)
+	{
 		//convert the received buffer into time
 		time.Second = 0;
 		time.Minute = rx_buffer->Min-((rx_buffer->Min/16)*6);
 		time.Hour   = rx_buffer->Hour-((rx_buffer->Hour/16)*6);
-		time.Day    = rx_buffer->Day-((rx_buffer->Day/16)*6); 
+		time.Day    = rx_buffer->Day-((rx_buffer->Day/16)*6);
 		time.Month  = rx_buffer->Month-((rx_buffer->Month/16)*6);
 		time.Year   = 2000 + rx_buffer->Year-((rx_buffer->Year/16)*6) -1970;
-		latestupdatedTime = makeTime(time);	 
+		latestupdatedTime = makeTime(time);
 		CEST = rx_buffer->CEST;
 		//Parity correct
 		return true;
@@ -304,7 +305,7 @@ bool DCF77::processBuffer(void) {
 }
 
 /**
- * Get most recently received time 
+ * Get most recently received time
  * Note, this only returns an time once, until the next update
  */
 time_t DCF77::getTime(void)
@@ -319,7 +320,7 @@ time_t DCF77::getTime(void)
 }
 
 /**
- * Get most recently received time in UTC 
+ * Get most recently received time in UTC
  * Note, this only returns an time once, until the next update
  */
 time_t DCF77::getUTCTime(void)

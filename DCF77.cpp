@@ -113,7 +113,7 @@ void DCF77::int0handler() {
 	// If the detected pulse is too short it will be an
 	// incorrect pulse that we shall reject as well
 	if ((flankTime-leadingEdge)<DCFRejectPulseWidth) {
-	    LogLn("rPW");
+		LogLn("rPW");
 		return;
 	}
 	
@@ -168,12 +168,12 @@ inline void DCF77::finalizeBuffer(void) {
 		// Reset running buffer
 		bufferinit();
 		FilledBufferAvailable = true;
-    } else {
+	} else {
 		// Buffer is not yet full at end of time-sequence
 		LogLn("EoM");
 		// Reset running buffer
 		bufferinit();
-    }
+	}
 }
 
 /**
@@ -282,7 +282,7 @@ bool DCF77::processBuffer(void) {
 	rx_buffer = (struct DCF77Buffer *)(unsigned long long)&processingBuffer;
 
 	// Check parities
-    if (flags.parityMin == rx_buffer->P1  &&
+	if (flags.parityMin == rx_buffer->P1  &&
 		flags.parityHour == rx_buffer->P2 &&
 		flags.parityDate == rx_buffer->P3 &&
 		rx_buffer->CEST != rx_buffer->CET)
@@ -333,6 +333,10 @@ time_t DCF77::getUTCTime(void)
 		time_t currentTime =latestupdatedTime - UTCTimeDifference + (now() - processingTimestamp);
 		return(currentTime);
 	}
+}
+
+bool DCF77::isPulse(void) {
+	return Up;
 }
 
 /**

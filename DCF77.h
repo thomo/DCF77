@@ -94,6 +94,8 @@ public:
 	static void Start(void);
 	static void Stop(void);
 	static void int0handler();
+	
+	static bool isPulse();
  };
 
 #endif
